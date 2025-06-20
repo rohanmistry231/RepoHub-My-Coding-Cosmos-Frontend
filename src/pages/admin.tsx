@@ -43,12 +43,12 @@ const Admin = () => {
   // Fetch repos and categories from backend
   useEffect(() => {
     if (isAuthenticated) {
-      fetch(`http://localhost:5000/repos?searchQuery=${searchQuery}&sortBy=${sortBy}&filterCategory=${filterCategory}&showTopPicksOnly=false`)
+      fetch(`https://repo-hub-my-coding-cosmos-backend.vercel.app/repos?searchQuery=${searchQuery}&sortBy=${sortBy}&filterCategory=${filterCategory}&showTopPicksOnly=false`)
         .then(res => res.json())
         .then(data => setRepos(data.repos))
         .catch(err => console.error('Error fetching repos:', err));
 
-      fetch('http://localhost:5000/categories')
+      fetch('https://repo-hub-my-coding-cosmos-backend.vercel.app/categories')
         .then(res => res.json())
         .then(data => setCategories(['All', ...data.sort()]))
         .catch(err => console.error('Error fetching categories:', err));
@@ -58,7 +58,7 @@ const Admin = () => {
   // CRUD Operations
   const handleCreateRepo = (e) => {
     e.preventDefault();
-    fetch('http://localhost:5000/repos', {
+    fetch('https://repo-hub-my-coding-cosmos-backend.vercel.app/repos', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -78,7 +78,7 @@ const Admin = () => {
 
   const handleUpdateRepo = (e) => {
     e.preventDefault();
-    fetch(`http://localhost:5000/repos/${editRepo._id}`, {
+    fetch(`https://repo-hub-my-coding-cosmos-backend.vercel.app/repos/${editRepo._id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -97,7 +97,7 @@ const Admin = () => {
   };
 
   const handleDeleteRepo = (id) => {
-    fetch(`http://localhost:5000/repos/${id}`, { method: 'DELETE' })
+    fetch(`https://repo-hub-my-coding-cosmos-backend.vercel.app/repos/${id}`, { method: 'DELETE' })
       .then(() => {
         fetchRepos();
         fetchCategories(); // Refresh categories
@@ -106,14 +106,14 @@ const Admin = () => {
   };
 
   const fetchRepos = () => {
-    fetch(`http://localhost:5000/repos?searchQuery=${searchQuery}&sortBy=${sortBy}&filterCategory=${filterCategory}&showTopPicksOnly=false`)
+    fetch(`https://repo-hub-my-coding-cosmos-backend.vercel.app/repos?searchQuery=${searchQuery}&sortBy=${sortBy}&filterCategory=${filterCategory}&showTopPicksOnly=false`)
       .then(res => res.json())
       .then(data => setRepos(data.repos))
       .catch(err => console.error('Error fetching repos:', err));
   };
 
   const fetchCategories = () => {
-    fetch('http://localhost:5000/categories')
+    fetch('https://repo-hub-my-coding-cosmos-backend.vercel.app/categories')
       .then(res => res.json())
       .then(data => setCategories(['All', ...data.sort()]))
       .catch(err => console.error('Error fetching categories:', err));

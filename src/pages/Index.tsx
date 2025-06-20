@@ -21,12 +21,12 @@ const Index = () => {
 
   // Fetch repos and categories from backend
   useEffect(() => {
-    fetch(`http://localhost:5000/repos?searchQuery=${searchQuery}&sortBy=${sortBy}&filterCategory=${filterCategory}&showTopPicksOnly=${showTopPicksOnly}`)
+    fetch(`https://repo-hub-my-coding-cosmos-backend.vercel.app/repos?searchQuery=${searchQuery}&sortBy=${sortBy}&filterCategory=${filterCategory}&showTopPicksOnly=${showTopPicksOnly}`)
       .then(res => res.json())
       .then(data => setRepos(data.repos))
       .catch(err => console.error('Error fetching repos:', err));
 
-    fetch('http://localhost:5000/categories')
+    fetch('https://repo-hub-my-coding-cosmos-backend.vercel.app/categories')
       .then(res => res.json())
       .then(data => setCategories(['All', ...data.sort()]))
       .catch(err => console.error('Error fetching categories:', err));
