@@ -1,0 +1,175 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
+
+@layer base {
+  :root {
+    --background: 13 13 13; /* #0d0d0d */
+    --foreground: 238 230 255; /* #eee6ff */
+
+    --card: 26 26 46; /* #1a1a2e */
+    --card-foreground: 238 230 255;
+
+    --popover: 26 26 46;
+    --popover-foreground: 238 230 255;
+
+    --primary: 0 212 255; /* #00d4ff */
+    --primary-foreground: 13 13 13;
+
+    --secondary: 26 26 46;
+    --secondary-foreground: 238 230 255;
+
+    --muted: 40 40 40;
+    --muted-foreground: 163 163 163;
+
+    --accent: 255 20 147; /* #ff1493 */
+    --accent-foreground: 238 230 255;
+
+    --destructive: 255 85 85;
+    --destructive-foreground: 238 230 255;
+
+    --border: 40 40 40;
+    --input: 40 40 40;
+    --ring: 255 20 147;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 13 13 13;
+    --sidebar-foreground: 238 230 255;
+    --sidebar-primary: 0 212 255;
+    --sidebar-primary-foreground: 13 13 13;
+    --sidebar-accent: 26 26 46;
+    --sidebar-accent-foreground: 238 230 255;
+    --sidebar-border: 40 40 40;
+    --sidebar-ring: 0 212 255;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-cosmic-dark text-cosmic-star font-inter;
+    font-size: 1.1rem;
+    line-height: 1.7;
+    letter-spacing: -0.025em;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  .galactic-gradient {
+    background: radial-gradient(ellipse at center, rgba(0, 212, 255, 0.15) 0%, rgba(255, 20, 147, 0.1) 40%, rgba(13, 13, 13, 1) 70%);
+  }
+  
+  .constellation-glow {
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.3), 0 0 40px rgba(0, 212, 255, 0.1);
+  }
+  
+  .comet-glow {
+    box-shadow: 0 0 20px rgba(255, 20, 147, 0.4), 0 0 40px rgba(255, 20, 147, 0.2);
+  }
+  
+  .card-hover {
+    transition: all 150ms ease-out;
+  }
+  
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 212, 255, 0.1);
+  }
+  
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-cosmic-comet focus:ring-offset-2 focus:ring-offset-cosmic-dark;
+  }
+}
+
+/* Cosmic particles background */
+.cosmic-particles {
+  position: relative;
+  overflow: hidden;
+}
+
+.cosmic-particles::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(2px 2px at 20px 30px, rgba(255, 255, 255, 0.3), transparent),
+    radial-gradient(2px 2px at 40px 70px, rgba(0, 212, 255, 0.4), transparent),
+    radial-gradient(1px 1px at 90px 40px, rgba(255, 20, 147, 0.4), transparent),
+    radial-gradient(1px 1px at 130px 80px, rgba(255, 255, 255, 0.2), transparent),
+    radial-gradient(2px 2px at 160px 30px, rgba(0, 212, 255, 0.3), transparent);
+  background-repeat: repeat;
+  background-size: 200px 100px;
+  animation: twinkle 8s linear infinite;
+  pointer-events: none;
+}
+
+/* Cursor animations */
+@keyframes fade-out {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+}
+
+.animate-fade-out {
+  animation: fade-out 3s ease-out forwards;
+}
+
+/* Scrollbar styling for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(26, 26, 46, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 212, 255, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 212, 255, 0.5);
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-twinkle,
+  .cosmic-particles::before {
+    animation: none;
+  }
+  
+  .card-hover {
+    transition: none;
+  }
+
+  .cursor-none {
+    cursor: auto !important;
+  }
+
+  .animate-fade-out {
+    animation: none;
+  }
+}
