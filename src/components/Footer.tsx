@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Github, Linkedin, Mail } from 'lucide-react';
+import { Linkedin, Mail, Newspaper, BriefcaseBusiness } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const Footer: React.FC = () => {
@@ -47,6 +47,7 @@ const Footer: React.FC = () => {
         <div className="text-center max-w-2xl mx-auto">
           {/* Social Icons */}
           <div className="flex justify-center gap-6 mb-8">
+
             <Button
               size="sm"
               variant="outline"
@@ -54,15 +55,31 @@ const Footer: React.FC = () => {
               asChild
             >
               <a 
-                href="https://github.com/yourusername" 
+                href="http://irohanportfolio.netlify.app/" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                aria-label="Visit GitHub profile"
+                aria-label="Visit Portfolio profile"
               >
-                <Github className="w-5 h-5" />
+                <BriefcaseBusiness className="w-5 h-5" />
               </a>
             </Button>
-            
+
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-12 h-12 rounded-full border-cosmic-constellation/30 text-cosmic-constellation hover:bg-cosmic-constellation/10 hover:border-cosmic-constellation focus-ring p-0"
+              asChild
+            >
+              <a 
+                href="https://medium.com/@rohanmistry231" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                aria-label="Visit Medium profile"
+              >
+                <Newspaper className="w-5 h-5" />
+              </a>
+            </Button>
+
             <Button
               size="sm"
               variant="outline"
@@ -86,7 +103,7 @@ const Footer: React.FC = () => {
               asChild
             >
               <a 
-                href="mailto:your.email@example.com"
+                href="mailto:rohanmistry231@gmail.com"
                 aria-label="Send email"
               >
                 <Mail className="w-5 h-5" />

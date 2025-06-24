@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Star, Github, ExternalLink, Search, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,33 +11,78 @@ import AnimatedCursor from '@/components/AnimatedCursor';
 import CursorBackground from '@/components/CursorBackground';
 
 const Index = () => {
-  const [repos, setRepos] = useState([]);
-  const [categories, setCategories] = useState(['All']); // Dynamic categories
+  const [allRepos, setAllRepos] = useState([]);
+  const [categories, setCategories] = useState(['All']);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('stars');
   const [filterCategory, setFilterCategory] = useState('All');
   const [showTopPicksOnly, setShowTopPicksOnly] = useState(false);
-  const [visibleRepos, setVisibleRepos] = useState(12); // Kept for compatibility, but not used with limit
+  const [visibleRepos, setVisibleRepos] = useState(0); // Track visible repos count
+  const [totalRepos, setTotalRepos] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const loadMoreRef = useRef(null);
 
-  // Fetch repos and categories from backend
   useEffect(() => {
-    fetch(`https://repo-hub-my-coding-cosmos-backend.vercel.app/repos?searchQuery=${searchQuery}&sortBy=${sortBy}&filterCategory=${filterCategory}&showTopPicksOnly=${showTopPicksOnly}`)
-      .then(res => res.json())
-      .then(data => setRepos(data.repos))
-      .catch(err => console.error('Error fetching repos:', err));
+    const storedData = localStorage.getItem('repoData');
+    if (storedData) {
+      const { repos, categories, total } = JSON.parse(storedData);
+      console.log('Loaded from localStorage:', { repos: repos.length, categories, total });
+      setAllRepos(repos);
+      setCategories(categories);
+      setTotalRepos(total);
+      setLoading(false);
+    } else {
+      const reposUrl = `https://repo-hub-my-coding-cosmos-backend.vercel.app/categories-and-repos`;
+      console.log('Fetching from API:', reposUrl);
+      fetch(reposUrl)
+        .then(res => {
+          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+          return res.json();
+        })
+        .then(data => {
+          console.log('API response:', data);
+          const { repos, categories, total } = data;
+          setAllRepos(repos);
+          setCategories(categories);
+          setTotalRepos(total);
+          localStorage.setItem('repoData', JSON.stringify({ repos, categories, total }));
+        })
+        .catch(err => {
+          console.error('Error fetching data:', err);
+          setAllRepos([]); // Fallback to empty array on error
+        })
+        .finally(() => setLoading(false));
+    }
+  }, []);
 
-    fetch('https://repo-hub-my-coding-cosmos-backend.vercel.app/categories')
-      .then(res => res.json())
-      .then(data => setCategories(['All', ...data.sort()]))
-      .catch(err => console.error('Error fetching categories:', err));
-  }, [searchQuery, sortBy, filterCategory, showTopPicksOnly]);
+  // Filter and sort repos locally
+  const filteredRepos = allRepos.filter(repo => {
+    const matchesCategory = filterCategory === 'All' || repo.category === filterCategory;
+    const matchesSearch = !searchQuery || repo.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesTopPicks = !showTopPicksOnly || repo.isTopPick;
+    return matchesCategory && matchesSearch && matchesTopPicks;
+  }).sort((a, b) => {
+    switch (sortBy) {
+      case 'stars': return b.stars - a.stars;
+      case 'updated': return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime();
+      case 'name': return a.name.localeCompare(b.name);
+      default: return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime();
+    }
+  });
 
   const handleLoadMore = () => {
-    setVisibleRepos(prev => Math.min(prev + 12, repos.length));
+    const scrollPosition = window.scrollY; // Save current scroll position
+    setVisibleRepos(prev => Math.min(prev + 12, filteredRepos.length)); // Increment by 12, cap at total filtered
+    setTimeout(() => {
+      window.scrollTo(0, scrollPosition); // Restore scroll position
+      if (loadMoreRef.current) {
+        loadMoreRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); // Keep button in view
+      }
+    }, 0);
   };
 
   const getRelativeTime = (date) => {
-    const now = new Date('2025-06-20T10:26:00+05:30'); // Updated to current date and time in IST
+    const now = new Date('2025-06-21T09:24:00+05:30'); // Updated to 09:24 AM IST
     const diffTime = Math.abs(now.getTime() - new Date(date).getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     if (diffDays === 1) return '1 day ago';
@@ -46,59 +91,30 @@ const Index = () => {
     return `${Math.floor(diffDays / 365)} years ago`;
   };
 
-  // CRUD Operations (Basic examples)
-  const handleCreateRepo = () => {
-    const newRepo = {
-      name: 'new-project-1',
-      tagline: 'New innovative project',
-      category: 'Web Development',
-      stack: ['React', 'Node.js'],
-      stars: 100,
-      lastUpdated: new Date().toISOString(),
-      isTopPick: true,
-      githubUrl: 'https://github.com/user/new-project-1',
-      deepWikiUrl: 'https://deepwiki.com/new-project-1'
-    };
-    fetch('/api/repos', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newRepo)
-    }).then(() => window.location.reload()); // Refresh to see new data
-  };
-
-  const handleDeleteRepo = (id) => {
-    fetch(`/api/repos/${id}`, { method: 'DELETE' }).then(() => window.location.reload());
-  };
-
   return (
     <div className="min-h-screen bg-cosmic-dark cursor-none">
-      {/* Cursor Components - Hidden on mobile */}
       <div className="hidden lg:block">
         <AnimatedCursor />
         <CursorBackground />
       </div>
       
-      {/* Hero Section */}
-      <HeroSection totalRepos={repos.length} />
+      <HeroSection totalRepos={totalRepos} />
 
-      {/* Search & Filters */}
-      <section className="py-0">
+      <section className="pt-2">
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto">
             <div className="flex flex-col lg:flex-row gap-6 items-center">
-              {/* Search Bar */}
               <div className="relative flex-1 max-w-2xl w-full">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-cosmic-constellation w-5 h-5" />
                 <Input
                   type="text"
-                  placeholder="Search through the cosmos..."
+                  placeholder="Search by name..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-12 h-14 bg-cosmic-nebula border-cosmic-constellation/20 text-cosmic-star placeholder:text-cosmic-star/60 focus:border-cosmic-constellation focus-ring text-lg w-full"
                 />
               </div>
 
-              {/* Category Filter Dropdown */}
               <Select value={filterCategory} onValueChange={setFilterCategory}>
                 <SelectTrigger className="h-14 bg-cosmic-nebula border-cosmic-constellation/20 text-cosmic-star focus-ring w-full sm:w-48">
                   <Filter className="w-4 h-4 mr-2" />
@@ -113,7 +129,6 @@ const Index = () => {
                 </SelectContent>
               </Select>
 
-              {/* Sort Dropdown */}
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger className="h-14 bg-cosmic-nebula border-cosmic-constellation/20 text-cosmic-star focus-ring w-full sm:w-48 flex items-center justify-center">
                   <SelectValue />
@@ -125,7 +140,6 @@ const Index = () => {
                 </SelectContent>
               </Select>
 
-              {/* Top Picks Toggle */}
               <Button
                 variant={showTopPicksOnly ? "default" : "outline"}
                 onClick={() => setShowTopPicksOnly(!showTopPicksOnly)}
@@ -140,12 +154,11 @@ const Index = () => {
               </Button>
             </div>
 
-            {/* Results Count */}
             <div className="mt-6 text-center">
               <p className="text-cosmic-star/70" role="status" aria-live="polite">
-                {repos.length === 0 
-                  ? "No constellations found—try another star-name!" 
-                  : `Found ${repos.length} stellar ${repos.length === 1 ? 'project' : 'projects'}`
+                {filteredRepos.length === 0 
+                  ? "No constellations found—try another search or category!" 
+                  : `Found ${Math.min(visibleRepos + 12, filteredRepos.length)} of ${totalRepos} stellar ${filteredRepos.length === 1 ? 'project' : 'projects'}`
                 }
                 {searchQuery && ` matching "${searchQuery}"`}
               </p>
@@ -154,34 +167,35 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Repo Grid */}
       <section className="py-6">
         <div className="container mx-auto px-8">
-          {repos.length > 0 ? (
+          {loading ? (
+            <div className="flex justify-center items-center py-20">
+              <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-cosmic-constellation"></div>
+            </div>
+          ) : filteredRepos.length > 0 ? (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 max-w-7xl mx-auto">
-                {repos.map((repo, index) => (
+                {filteredRepos.slice(0, visibleRepos + 12).map((repo, index) => (
                   <RepoCard 
-                    key={repo.id} 
+                    key={repo._id || index}
                     repo={{
                       ...repo,
                       lastUpdatedRelative: getRelativeTime(repo.lastUpdated)
                     }}
                     index={index}
-                    // onDelete={() => handleDeleteRepo(repo._id)} // Assuming _id from MongoDB
                   />
                 ))}
               </div>
 
-              {/* Load More Button */}
-              {visibleRepos < repos.length && (
-                <div className="mt-9 text-center">
+              {visibleRepos + 12 < filteredRepos.length && (
+                <div className="mt-9 text-center" ref={loadMoreRef}>
                   <Button
                     onClick={handleLoadMore}
                     size="lg"
                     className="bg-cosmic-constellation hover:bg-cosmic-constellation/80 text-cosmic-dark font-semibold px-8 py-4 h-auto focus-ring"
                   >
-                    Load More Stars ({repos.length - visibleRepos} remaining)
+                    Load More Stars ({filteredRepos.length - (visibleRepos + 12)} remaining)
                   </Button>
                 </div>
               )}
@@ -202,10 +216,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Call-out Banner */}
       <CalloutBanner />
-
-      {/* Footer */}
       <Footer />
     </div>
   );

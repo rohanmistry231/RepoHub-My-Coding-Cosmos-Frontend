@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Star, Github, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -13,6 +12,22 @@ const HeroSection: React.FC<HeroSectionProps> = ({ totalRepos }) => {
     day: 'numeric',
     year: 'numeric'
   });
+
+  const [animatedCount, setAnimatedCount] = useState(0);
+
+  useEffect(() => {
+    let count = 0;
+    const duration = 1000; // Faster animation duration in milliseconds (1 second)
+    const incrementTime = Math.max(50, duration / totalRepos); // Minimum 50ms per increment
+
+    const timer = setInterval(() => {
+      count += 1;
+      setAnimatedCount(count);
+      if (count === totalRepos) clearInterval(timer);
+    }, incrementTime);
+
+    return () => clearInterval(timer); // Cleanup on unmount
+  }, [totalRepos]);
 
   return (
     <section className="relative py-16 lg:py-20 galactic-gradient overflow-hidden">
@@ -41,7 +56,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ totalRepos }) => {
           <div className="mb-12 animate-fade-in" style={{ animationDelay: '0.2s' }}>
             <div className="inline-flex items-center gap-8 bg-cosmic-nebula/50 backdrop-blur-sm rounded-2xl px-8 py-4 border border-cosmic-constellation/20">
               <div className="text-center">
-                <div className="text-3xl font-bold text-cosmic-constellation">{totalRepos}+</div>
+                <div className="text-3xl font-bold text-cosmic-constellation animate-count-up" style={{ '--target-count': totalRepos } as React.CSSProperties}>
+                  {animatedCount}+
+                </div>
                 <div className="text-sm text-cosmic-star/70">Projects</div>
               </div>
               <div className="w-px h-12 bg-cosmic-constellation/20" />
@@ -59,7 +76,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ totalRepos }) => {
               className="bg-cosmic-comet hover:bg-cosmic-comet/80 text-white font-semibold px-8 py-4 h-auto comet-glow focus-ring transition-all duration-200"
               asChild
             >
-              <a href="https://github.com/yourusername/repohub" target="_blank" rel="noopener noreferrer">
+              <a href="https://github.com/rohanmistry231/repohub" target="_blank" rel="noopener noreferrer">
                 <Star className="w-5 h-5 mr-2" />
                 <span className="lg:hidden">Star RepoHub</span>
                 <span className="hidden lg:inline">Star RepoHub</span>
@@ -73,7 +90,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ totalRepos }) => {
               className="border-cosmic-constellation text-cosmic-constellation hover:bg-cosmic-constellation/10 font-semibold px-8 py-4 h-auto constellation-glow focus-ring transition-all duration-200"
               asChild
             >
-              <a href="https://github.com/yourusername" target="_blank" rel="noopener noreferrer">
+              <a href="https://github.com/rohanmistry231" target="_blank" rel="noopener noreferrer">
                 <Github className="w-5 h-5 mr-2" />
                 <span className="lg:hidden">Follow Me</span>
                 <span className="hidden lg:inline">Follow Me</span>
